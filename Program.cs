@@ -90,16 +90,17 @@ class Program
                 }
 
                 // Markdown string
-                string bannerPath = "banner.png";
+                string bannerPath = $"https://raw.githubusercontent.com/margotlinne/SteamNow/main/banner.png";
                 recentGameInfo = $@"
-![Banner]({bannerPath})
-### Recently Played
+<img src=""{bannerPath}"" alt=""Banner"" width=""40%"">
 
 ![{gameName}]({imageUrl})  
-**{gameName}**  
-Playtime: {hours}h {minutes}m  
-Last Played: {lastPlayedStr}  
-Achievements: {progressBar} {completed}/{total}";
+
+### **{gameName}**  
+
+**Playtime**: {hours}h {minutes}m  
+**Last Played**: {lastPlayedStr}  
+**Achievements**: {progressBar} {completed}/{total}";
             }
         }
 
