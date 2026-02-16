@@ -1,0 +1,29 @@
+name: Update SteamNow README
+
+# Update Every day
+on:
+  schedule:
+    - cron: '0 0 * * *'  # UTC 0
+  workflow_dispatch: 
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.0.100' 
+
+      - name: Run SteamNow updater
+        env:
+          STEAM_API_KEY: ${{ secrets.STEAM_API_KEY }}
+          STEAM_ID: ${{ secrets.STEAM_ID }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+          GITHUB_OWNER: ${{ github.repository_owner }}
+          GITHUB_STEAMNOW_REPO: ${{ secrets.STEAMNOW_REPO }}
+        run: dotnet run --project ./SteamNow.csproj
