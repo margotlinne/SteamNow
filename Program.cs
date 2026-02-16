@@ -112,7 +112,7 @@ class Program
             {
                 var sb = new StringBuilder();
                 sb.AppendLine(bannerHtml);
-                sb.AppendLine(""); 
+                sb.AppendLine("");
 
                 sb.AppendLine("## RECENTLY PLAYED");
                 sb.AppendLine(GetGameInfo(recentGame));
@@ -126,8 +126,9 @@ class Program
             }
 
             // Console.WriteLine(userGameInfo);
-            #endregion
         }
+        #endregion
+        
         #region 2. GitHub
         string gitToken = Environment.GetEnvironmentVariable("GITHUB_TOKEN");
         string owner = Environment.GetEnvironmentVariable("GITHUB_OWNER");
