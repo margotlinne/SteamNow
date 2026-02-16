@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/margotlinne/SteamNow/main/banner.png" alt="Banner" width="40%">
+<img src="https://raw.githubusercontent.com/margotlinne/SteamNow/main/banner.png" alt="Banner" width="60%">
 
 Automatically updates your GitHub profile README with your recently played Steam game.
 
