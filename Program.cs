@@ -85,11 +85,12 @@ class Program
 
                 // Return HTML with image, title, playtime, last played date, and achievement progress
                 return $@"
-<img src=""{imageUrl}"" width=""400""><br>
-<b>『{name}』</b><br>
-**Playtime**: {hours}h {minutes}m<br>
-**Last Played**: {lastPlayedStr}<br>
-**Achievements**: {progressBar} {completed}/{total}";
+<img align=""left"" width=""400"" src=""{imageUrl}"" style=""margin-right:1em;"">
+<b>『{name}』</b><br><br>
+<b>Playtime</b>: {hours}h {minutes}m<br>
+<b>Last Played</b>: {lastPlayedStr}<br>
+<b>Achievements</b>: {progressBar} {completed}/{total}<br><br>
+<br style=""clear: both;""><br>";
             }
 
 
@@ -97,89 +98,89 @@ class Program
             string bannerHtml = $@"
 <a href=""https://github.com/margotlinne/SteamNow"">
   <img src=""{bannerPath}"" alt=""Banner"" width=""50%"">
-</a>";  
+</a>";
 
             // Compare the recent game and most played game
             if (recentGame.GetProperty("appid").GetRawText() == mostPlayedGame.GetProperty("appid").GetRawText())
             {
                 // If both are the same game, show only one with label "Most and Recently Played"
-                userGameInfo = bannerHtml + $"<br><b>MOST AND RECENTLY PLAYED</b>\n\n{GetGameInfo(recentGame)}";
+                userGameInfo = bannerHtml +
+                                "\n<br>\n\n## MOST AND RECENTLY PLAYED\n\n" +
+                                GetGameInfo(recentGame);
             }
             else
             {
-                string recentInfo = $"<b>RECENTLY PLAYED</b>\n{GetGameInfo(recentGame)}";
-                string mostPlayedInfo = $"<b>MOST PLAYED</b>\n{GetGameInfo(mostPlayedGame)}";
-
-                // Use an HTML table to display the two games side by side
                 var sb = new StringBuilder();
                 sb.AppendLine(bannerHtml);
-                sb.AppendLine("<br>");
-                sb.AppendLine("<table style=\"border:none\">");
-                sb.AppendLine("<tr>");
-                sb.AppendLine($"<td valign=\"top\">{recentInfo}</td>");
-                sb.AppendLine($"<td valign=\"top\">{mostPlayedInfo}</td>");
-                sb.AppendLine("</tr>");
-                sb.AppendLine("</table>");
+                sb.AppendLine(""); 
+
+                sb.AppendLine("## RECENTLY PLAYED");
+                sb.AppendLine(GetGameInfo(recentGame));
+                sb.AppendLine("");
+                sb.AppendLine("");
+
+                sb.AppendLine("## MOST PLAYED");
+                sb.AppendLine(GetGameInfo(mostPlayedGame));
 
                 userGameInfo = sb.ToString();
             }
 
             // Console.WriteLine(userGameInfo);
             #endregion
-
-            #region 2. GitHub
-            string gitToken = Environment.GetEnvironmentVariable("GITHUB_TOKEN");
-            string owner = Environment.GetEnvironmentVariable("GITHUB_OWNER");
-            string repo = Environment.GetEnvironmentVariable("GITHUB_STEAMNOW_REPO");
-
-            string readmeUrl = $"https://api.github.com/repos/{owner}/{repo}/contents/README.md";
-
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("token", gitToken);
-
-            string readmeText = "";
-            string sha = null;
-
-            try
-            {
-                // Try to get the existing README
-                var readmeResponse = await client.GetStringAsync(readmeUrl);
-                using JsonDocument readmeDoc = JsonDocument.Parse(readmeResponse);
-                var root = readmeDoc.RootElement;
-                sha = root.GetProperty("sha").GetString();
-                string contentBase64 = root.GetProperty("content").GetString();
-                readmeText = Encoding.UTF8.GetString(Convert.FromBase64String(contentBase64));
-            }
-            catch (HttpRequestException e) when (e.Message.Contains("404"))
-            {
-                // If README does not exist, prepare to create a new one
-                readmeText = "";
-                sha = null; // No SHA for new file
-            }
-
-            // Prepare the new README content
-            string newReadmeText = $"{userGameInfo}";
-
-            string newContentBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(newReadmeText));
-
-            // Send a PUT request to GitHub to update or create the README
-            var putPayload = new
-            {
-                message = "Auto update README with recent Steam game",
-                content = newContentBase64,
-                sha = sha // If null, GitHub will create a new file
-            };
-
-            var jsonPayload = JsonSerializer.Serialize(putPayload);
-            var putContent = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-
-            var putResponse = await client.PutAsync(readmeUrl, putContent);
-
-            if (putResponse.IsSuccessStatusCode)
-                Console.WriteLine("README Update Succeeded!");
-            else
-                Console.WriteLine($"Update failed: {putResponse.StatusCode}");
-
-            #endregion
         }
+        #region 2. GitHub
+        string gitToken = Environment.GetEnvironmentVariable("GITHUB_TOKEN");
+        string owner = Environment.GetEnvironmentVariable("GITHUB_OWNER");
+        string repo = Environment.GetEnvironmentVariable("GITHUB_STEAMNOW_REPO");
+
+        string readmeUrl = $"https://api.github.com/repos/{owner}/{repo}/contents/README.md";
+
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("token", gitToken);
+
+        string readmeText = "";
+        string sha = null;
+
+        try
+        {
+            // Try to get the existing README
+            var readmeResponse = await client.GetStringAsync(readmeUrl);
+            using JsonDocument readmeDoc = JsonDocument.Parse(readmeResponse);
+            var root = readmeDoc.RootElement;
+            sha = root.GetProperty("sha").GetString();
+            string contentBase64 = root.GetProperty("content").GetString();
+            readmeText = Encoding.UTF8.GetString(Convert.FromBase64String(contentBase64));
+        }
+        catch (HttpRequestException e) when (e.Message.Contains("404"))
+        {
+            // If README does not exist, prepare to create a new one
+            readmeText = "";
+            sha = null; // No SHA for new file
+        }
+
+        // Prepare the new README content
+        string newReadmeText = $"{userGameInfo}";
+
+        string newContentBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(newReadmeText));
+
+        // Send a PUT request to GitHub to update or create the README
+        var putPayload = new
+        {
+            message = "Auto update README with recent Steam game",
+            content = newContentBase64,
+            sha = sha // If null, GitHub will create a new file
+        };
+
+        var jsonPayload = JsonSerializer.Serialize(putPayload);
+        var putContent = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+        var putResponse = await client.PutAsync(readmeUrl, putContent);
+
+        if (putResponse.IsSuccessStatusCode)
+            Console.WriteLine("README Update Succeeded!");
+        else
+            Console.WriteLine($"Update failed: {putResponse.StatusCode}");
+
+        #endregion
+
     }
 }
