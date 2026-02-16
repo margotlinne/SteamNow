@@ -115,25 +115,37 @@ Achievements: {progressBar} {completed}/{total}";
 
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("token", gitToken);
 
-        // get README
-        var readmeResponse = await client.GetStringAsync(readmeUrl);
-        using JsonDocument readmeDoc = JsonDocument.Parse(readmeResponse);
-        var root = readmeDoc.RootElement;
-        string sha = root.GetProperty("sha").GetString();
-        string contentBase64 = root.GetProperty("content").GetString();
-        string readmeText = Encoding.UTF8.GetString(Convert.FromBase64String(contentBase64));
+        string readmeText = "";
+        string sha = null;
 
-        // edit README
+        try
+        {
+            // Try to get the existing README
+            var readmeResponse = await client.GetStringAsync(readmeUrl);
+            using JsonDocument readmeDoc = JsonDocument.Parse(readmeResponse);
+            var root = readmeDoc.RootElement;
+            sha = root.GetProperty("sha").GetString();
+            string contentBase64 = root.GetProperty("content").GetString();
+            readmeText = Encoding.UTF8.GetString(Convert.FromBase64String(contentBase64));
+        }
+        catch (HttpRequestException e) when (e.Message.Contains("404"))
+        {
+            // If README does not exist, prepare to create a new one
+            readmeText = "";
+            sha = null; // No SHA for new file
+        }
+
+        // Prepare the new README content
         string newReadmeText = $"{recentGameInfo}";
 
         string newContentBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(newReadmeText));
 
-        // send a PUT request to GitHub to update the README
+        // Send a PUT request to GitHub to update or create the README
         var putPayload = new
         {
             message = "Auto update README with recent Steam game",
             content = newContentBase64,
-            sha = sha
+            sha = sha // If null, GitHub will create a new file
         };
 
         var jsonPayload = JsonSerializer.Serialize(putPayload);
@@ -145,6 +157,7 @@ Achievements: {progressBar} {completed}/{total}";
             Console.WriteLine("README Update Succeeded!");
         else
             Console.WriteLine($"Update failed: {putResponse.StatusCode}");
+
         #endregion
     }
 }
