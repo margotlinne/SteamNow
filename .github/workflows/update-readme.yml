@@ -26,4 +26,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub
           GITHUB_OWNER: ${{ github.repository_owner }}
           GITHUB_STEAMNOW_REPO: ${{ secrets.STEAMNOW_REPO }}
-        run: dotnet run --project ./SteamNow/SteamNow.csproj
+        run: dotnet run --project ./SteamNow.csproj
