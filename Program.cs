@@ -92,7 +92,9 @@ class Program
                 // Markdown string
                 string bannerPath = $"https://raw.githubusercontent.com/margotlinne/SteamNow/main/banner.png";
                 recentGameInfo = $@"
-<img src=""{bannerPath}"" alt=""Banner"" width=""40%"">
+<a href=""https://github.com/margotlinne/SteamNow"">
+  <img src=""{bannerPath}"" alt=""Banner"" width=""40%"">
+</a>
 
 ![{gameName}]({imageUrl})  
 
