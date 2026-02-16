@@ -23,7 +23,7 @@ jobs:
         env:
           STEAM_API_KEY: ${{ secrets.STEAM_API_KEY }}
           STEAM_ID: ${{ secrets.STEAM_ID }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
           GITHUB_OWNER: ${{ github.repository_owner }}
           GITHUB_STEAMNOW_REPO: ${{ secrets.STEAMNOW_REPO }}
         run: dotnet run --project ./SteamNow.csproj
