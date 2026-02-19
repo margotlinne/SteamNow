@@ -161,26 +161,33 @@ class Program
         // Prepare the new README content
         string newReadmeText = $"{userGameInfo}";
 
-        string newContentBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(newReadmeText));
-
-        // Send a PUT request to GitHub to update or create the README
-        var putPayload = new
+        // Skip update if nothing changed
+        if (readmeText.Trim() == newReadmeText.Trim())
         {
-            message = "Auto update README with recent Steam game",
-            content = newContentBase64,
-            sha = sha // If null, GitHub will create a new file
-        };
-
-        var jsonPayload = JsonSerializer.Serialize(putPayload);
-        var putContent = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-
-        var putResponse = await client.PutAsync(readmeUrl, putContent);
-
-        if (putResponse.IsSuccessStatusCode)
-            Console.WriteLine("README Update Succeeded!");
+            Console.WriteLine("No changes detected. Skipping README update.");
+        }
         else
-            Console.WriteLine($"Update failed: {putResponse.StatusCode}");
+        {
+            string newContentBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(newReadmeText));
 
+            // Send a PUT request to GitHub to update or create the README
+            var putPayload = new
+            {
+                message = "Auto update README with recent Steam game",
+                content = newContentBase64,
+                sha = sha // If null, GitHub will create a new file
+            };
+
+            var jsonPayload = JsonSerializer.Serialize(putPayload);
+            var putContent = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+            var putResponse = await client.PutAsync(readmeUrl, putContent);
+
+            if (putResponse.IsSuccessStatusCode)
+                Console.WriteLine("README Update Succeeded!");
+            else
+                Console.WriteLine($"Update failed: {putResponse.StatusCode}");
+        }
         #endregion
 
     }
